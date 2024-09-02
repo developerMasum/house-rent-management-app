@@ -25,9 +25,19 @@ const createManager = z.object({
     houseOwnerId: z.string(),
   }),
 });
+const createTenant = z.object({
+  password: z.string(),
+  manager: z.object({
+    email: z.string().email(),
+    name: z.string(),
+    phoneNumber: z.string(),
+    houseOwnerId: z.string(),
+  }),
+});
 
 export const UserValidation = {
   createAdmin,
   createOwner,
   createManager,
+  createTenant,
 };

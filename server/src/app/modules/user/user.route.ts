@@ -47,5 +47,18 @@ router.post(
     return UserController.createManager(req, res, next);
   }
 );
+router.post(
+  "/create-tenant",
+  FileUploadHelper.upload.single("file"),
+  (req: Request, res: Response, next: NextFunction) => {
+    console.log("Incoming data:", req.body.data);
+    try {
+      req.body = UserValidation.createTenant.parse(JSON.parse(req.body.data));
+    } catch (err) {
+      return next(err); // Handle parsing errors gracefully
+    }
+    return UserController.createTenant(req, res, next);
+  }
+);
 
 export const UserRoutes = router;

@@ -128,9 +128,54 @@ const createManager = async (req: Request) => {
 
   return result;
 };
+const createTenant = async (req: Request) => {
+  const file = req.file as IUploadFile;
+
+  if (file) {
+    const uploadedProfileImage = await FileUploadHelper.uploadToCloudinary(
+      file
+    );
+    req.body.tenant.profilePhoto = uploadedProfileImage?.secure_url;
+  }
+
+  const hashPassword = await hashedPassword(req.body.password);
+
+  const result = await prisma.$transaction(async (transactionClient) => {
+    // Create a new user
+    const newUser = await transactionClient.user.create({
+      data: {
+        email: req.body.tenant.email,
+        phoneNumber: req.body.tenant.phoneNumber,
+        password: hashPassword,
+        role: UserRole.TENANT,
+      },
+    });
+
+    const newTenant = await transactionClient.tenant.create({
+      data: {
+        name: req.body.tenant.name,
+        numberOfFamilyMember: req.body.tenant.numberOfFamilyMember,
+        familyInfo: req.body.tenant.familyInfo,
+        profilePhoto: req.body.tenant.profilePhoto,
+        permanentAddress: req.body.tenant.permanentAddress,
+        jobInfo: req.body.tenant.jobInfo,
+        someOneInVillageHomeInfo: req.body.tenant.someOneInVillageHomeInfo,
+        nidInfoId: req.body.tenant.nidInfoId,
+        room: {
+          connect: { id: req.body.tenant.roomId },
+        },
+      },
+    });
+
+    return newTenant;
+  });
+
+  return result;
+};
 
 export const UserServices = {
   createAdmin,
   createOwner,
   createManager,
+  createTenant,
 };
