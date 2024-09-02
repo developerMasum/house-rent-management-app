@@ -1,8 +1,9 @@
 import express from "express";
-import { HouseController } from "./house.controller";
+import { RoomController } from "./room.controller";
 
 const router = express.Router();
 
-router.post("/create-house", HouseController.createHouse);
+router.post("/create-room", RoomController.createRoom);
+router.post("/electricity", RoomController.addElectricityReading);
 
-export const HouseRoutes = router;
+export const RoomRoutes = router;

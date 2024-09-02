@@ -89,18 +89,17 @@ model House {
 }
 
 model Room {
-  id                     String    @id @default(uuid())
-  roomNo                 Int
-  floorNo                Int
-  electricityBillReading Int
-  roomRent               Int
-  advancedRent           Int
-  dueAmount              Int
-  isAvailable            Boolean   @default(true)
-  vacantFrom             DateTime
-  vacantTo               DateTime?
-  createdAt              DateTime  @default(now())
-  updatedAt              DateTime  @updatedAt
+  id           String    @id @default(uuid())
+  roomNo       Int       @unique
+  floorNo      Int
+  roomRent     Int
+  advancedRent Int
+  dueAmount    Int
+  isAvailable  Boolean   @default(true)
+  vacantFrom   DateTime
+  vacantTo     DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
 
   houseId String
   house   House  @relation(fields: [houseId], references: [id])
@@ -108,11 +107,27 @@ model Room {
   currentTenantId String? @unique
   currentTenant   Tenant? @relation(fields: [currentTenantId], references: [id])
 
+  electricityBillReadings ElectricityBillReading[]
+
   payments            Payment[]
   maintenanceRequests MaintenanceRequest[]
   leaseAgreements     LeaseAgreement[]
 
   @@map("rooms")
+}
+
+model ElectricityBillReading {
+  id        String @id @default(uuid())
+  monthName String
+  year      Int
+  reading   Int
+  roomId    String
+  room      Room   @relation(fields: [roomId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("electricity_bill_readings")
 }
 
 model Tenant {
