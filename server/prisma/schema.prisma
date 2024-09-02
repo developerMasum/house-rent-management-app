@@ -1,0 +1,195 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// User model
+model User {
+  id          String      @id @default(uuid())
+  email       String      @unique
+  phoneNumber String      @unique
+  password    String
+  role        UserRole
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  admin       Admin? // Relation field to Admin
+  houseOwnwer HouseOwner?
+
+  @@map("users")
+}
+
+model Admin {
+  id           String   @id @default(uuid())
+  name         String
+  profilePhoto String?
+  role         UserRole @default(ADMIN)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  userId       String   @unique
+  user         User     @relation(fields: [userId], references: [id])
+
+  @@map("admin")
+}
+
+model HouseOwner {
+  id           String    @id @default(uuid())
+  name         String
+  profilePhoto String?
+  role         UserRole? @default(HOUSEOWNER)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  userId       String    @unique
+  user         User      @relation(fields: [userId], references: [id])
+  houses       House[]
+
+  @@map("houseowner")
+}
+
+model House {
+  id             String    @id @default(uuid())
+  name           String
+  location       String
+  numberOfRooms  Int
+  floorCount     Int
+  numberOfMeters Int
+  role           UserRole? @default(HOUSEOWNER)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  ownerId String
+  owner   HouseOwner @relation(fields: [ownerId], references: [id])
+
+  rooms Room[]
+
+  @@map("houses")
+}
+
+model Room {
+  id                     String   @id @default(uuid())
+  roomNo                 Int
+  floorNo                Int
+  electricityBillReading Int
+  roomRent               Int
+  advancedRent           Int
+  dueAmount              Int
+  isAvailable            Boolean  @default(true)
+  vacantFrom             DateTime
+  vacantTo               DateTime
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+
+  houseId String
+  house   House  @relation(fields: [houseId], references: [id])
+
+  currentTenantId String? @unique
+  currentTenant   Tenant? @relation(fields: [currentTenantId], references: [id])
+
+  payments            Payment[]
+  maintenanceRequests MaintenanceRequest[]
+  leaseAgreements     LeaseAgreement[]
+
+  @@map("rooms")
+}
+
+model Tenant {
+  id                       String    @id @default(uuid())
+  name                     String
+  email                    String    @unique
+  phoneNumber              String    @unique
+  password                 String
+  role                     UserRole? @default(TENANT)
+  createdAt                DateTime  @default(now())
+  updatedAt                DateTime  @updatedAt
+  profilePhoto             String?
+  permanentAddress         String
+  jobInfo                  String
+  familyInfo               String
+  numberOfFamilyMember     Int
+  someOneInVillageHomeInfo String
+
+  payments            Payment[]
+  maintenanceRequests MaintenanceRequest[]
+  leaseAgreements     LeaseAgreement[]
+  Room                Room?
+
+  @@map("tenant")
+}
+
+model Payment {
+  id          String        @id @default(uuid())
+  amount      Int
+  paymentDate DateTime
+  method      String
+  invoiceUrl  String
+  status      RequestStatus
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  tenantId String
+  tenant   Tenant @relation(fields: [tenantId], references: [id])
+
+  roomId String
+  room   Room   @relation(fields: [roomId], references: [id])
+
+  @@map("payments")
+}
+
+model MaintenanceRequest {
+  id        String        @id @default(uuid())
+  request   String
+  status    RequestStatus
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+
+  roomId String
+  room   Room   @relation(fields: [roomId], references: [id])
+
+  tenantId String
+  tenant   Tenant @relation(fields: [tenantId], references: [id])
+
+  @@map("maintenance_requests")
+}
+
+model LeaseAgreement {
+  id        String   @id @default(uuid())
+  startDate DateTime
+  endDate   DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  tenantId String
+  tenant   Tenant @relation(fields: [tenantId], references: [id])
+
+  roomId String
+  room   Room   @relation(fields: [roomId], references: [id])
+
+  @@map("lease_agreements")
+}
+
+model NIDInfo {
+  id            String   @id @default(uuid())
+  nidNumber     String
+  nidFrontImage String
+  nidBackImage  String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@map("nidinfo")
+}
+
+enum RequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum UserRole {
+  ADMIN
+  HOUSEOWNER
+  MANAGER
+  TENANT
+}
