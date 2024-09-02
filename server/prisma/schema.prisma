@@ -96,6 +96,7 @@ model Room {
   advancedRent Int
   dueAmount    Int
   isAvailable  Boolean   @default(true)
+  // attachedBathRoom Boolean
   vacantFrom   DateTime
   vacantTo     DateTime?
   createdAt    DateTime  @default(now())
@@ -133,23 +134,22 @@ model ElectricityBillReading {
 model Tenant {
   id                       String    @id @default(uuid())
   name                     String
-  email                    String    @unique
-  phoneNumber              String    @unique
-  password                 String
   role                     UserRole? @default(TENANT)
   createdAt                DateTime  @default(now())
   updatedAt                DateTime  @updatedAt
   profilePhoto             String?
   permanentAddress         String
   jobInfo                  String
-  familyInfo               String
+  familyInfo               String?
   numberOfFamilyMember     Int
   someOneInVillageHomeInfo String
 
   payments            Payment[]
   maintenanceRequests MaintenanceRequest[]
   leaseAgreements     LeaseAgreement[]
-  room                Room? // Relation field to Room
+  room                Room?
+  nidInfoId           String?
+  nidInfo             NIDInfo?             @relation(fields: [nidInfoId], references: [id])
 
   @@map("tenant")
 }
@@ -183,8 +183,7 @@ model MaintenanceRequest {
   roomId String
   room   Room   @relation(fields: [roomId], references: [id])
 
-  tenantId String
-  tenant   Tenant @relation(fields: [tenantId], references: [id])
+  tenant Tenant @relation(fields: [id], references: [id])
 
   @@map("maintenance_requests")
 }
@@ -207,11 +206,13 @@ model LeaseAgreement {
 
 model NIDInfo {
   id            String   @id @default(uuid())
+  note          String?
   nidNumber     String
   nidFrontImage String
   nidBackImage  String
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
+  Tenant        Tenant[]
 
   @@map("nidinfo")
 }
