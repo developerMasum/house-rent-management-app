@@ -24,8 +24,19 @@ const createOwner = catchAsync(async (req: Request, res: Response) => {
     data: result,
   });
 });
+const createManager = catchAsync(async (req: Request, res: Response) => {
+  //const { admin, ...userData } = req.body;
+  const result = await UserServices.createManager(req);
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Manager is created successfully!",
+    data: result,
+  });
+});
 
 export const UserController = {
   createAdmin,
   createOwner,
+  createManager,
 };

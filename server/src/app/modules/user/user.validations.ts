@@ -16,8 +16,18 @@ const createOwner = z.object({
     phoneNumber: z.string(),
   }),
 });
+const createManager = z.object({
+  password: z.string(),
+  manager: z.object({
+    email: z.string().email(),
+    name: z.string(),
+    phoneNumber: z.string(),
+    houseOwnerId: z.string(),
+  }),
+});
 
 export const UserValidation = {
   createAdmin,
   createOwner,
+  createManager,
 };

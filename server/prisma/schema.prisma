@@ -16,8 +16,9 @@ model User {
   role        UserRole
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
-  admin       Admin? // Relation field to Admin
-  houseOwnwer HouseOwner?
+  admin       Admin?
+  houseOwner  HouseOwner?
+  manager     Manager?
 
   @@map("users")
 }
@@ -45,23 +46,42 @@ model HouseOwner {
   userId       String    @unique
   user         User      @relation(fields: [userId], references: [id])
   houses       House[]
+  managers     Manager[] // Relation field to Manager
 
   @@map("houseowner")
 }
 
+model Manager {
+  id           String     @id @default(uuid())
+  name         String
+  profilePhoto String?
+  role         UserRole?  @default(MANAGER)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  userId       String     @unique
+  user         User       @relation(fields: [userId], references: [id])
+  houseOwnerId String
+  houseOwner   HouseOwner @relation(fields: [houseOwnerId], references: [id])
+  house        House?
+
+  @@map("managers")
+}
+
 model House {
-  id             String    @id @default(uuid())
+  id             String   @id @default(uuid())
   name           String
   location       String
   numberOfRooms  Int
   floorCount     Int
   numberOfMeters Int
-  role           UserRole? @default(HOUSEOWNER)
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 
   ownerId String
   owner   HouseOwner @relation(fields: [ownerId], references: [id])
+
+  managerId String?  @unique
+  manager   Manager? @relation(fields: [managerId], references: [id])
 
   rooms Room[]
 
@@ -69,18 +89,18 @@ model House {
 }
 
 model Room {
-  id                     String   @id @default(uuid())
+  id                     String    @id @default(uuid())
   roomNo                 Int
   floorNo                Int
   electricityBillReading Int
   roomRent               Int
   advancedRent           Int
   dueAmount              Int
-  isAvailable            Boolean  @default(true)
+  isAvailable            Boolean   @default(true)
   vacantFrom             DateTime
-  vacantTo               DateTime
-  createdAt              DateTime @default(now())
-  updatedAt              DateTime @updatedAt
+  vacantTo               DateTime?
+  createdAt              DateTime  @default(now())
+  updatedAt              DateTime  @updatedAt
 
   houseId String
   house   House  @relation(fields: [houseId], references: [id])
@@ -114,7 +134,7 @@ model Tenant {
   payments            Payment[]
   maintenanceRequests MaintenanceRequest[]
   leaseAgreements     LeaseAgreement[]
-  Room                Room?
+  room                Room? // Relation field to Room
 
   @@map("tenant")
 }

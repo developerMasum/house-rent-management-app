@@ -34,5 +34,18 @@ router.post(
     return UserController.createOwner(req, res, next);
   }
 );
+router.post(
+  "/create-manager",
+  FileUploadHelper.upload.single("file"),
+  (req: Request, res: Response, next: NextFunction) => {
+    console.log("Incoming data:", req.body.data);
+    try {
+      req.body = UserValidation.createManager.parse(JSON.parse(req.body.data));
+    } catch (err) {
+      return next(err); // Handle parsing errors gracefully
+    }
+    return UserController.createManager(req, res, next);
+  }
+);
 
 export const UserRoutes = router;

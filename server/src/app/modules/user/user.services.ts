@@ -85,8 +85,52 @@ const createOwner = async (req: Request) => {
 
   return result;
 };
+const createManager = async (req: Request) => {
+  const file = req.file as IUploadFile;
+
+  // Log the incoming request body
+  console.log(req.body);
+
+  // Upload the profile photo if available
+  if (file) {
+    const uploadedProfileImage = await FileUploadHelper.uploadToCloudinary(
+      file
+    );
+    req.body.manager.profilePhoto = uploadedProfileImage?.secure_url;
+  }
+
+  // Hash the password
+  const hashPassword = await hashedPassword(req.body.password);
+
+  // Perform the database transaction
+  const result = await prisma.$transaction(async (transactionClient) => {
+    // Create the User first
+    const newUser = await transactionClient.user.create({
+      data: {
+        email: req.body.manager.email,
+        phoneNumber: req.body.manager.phoneNumber,
+        password: hashPassword,
+        role: UserRole.MANAGER,
+      },
+    });
+
+    // Create the Manager linked to the User
+    const newManager = await transactionClient.manager.create({
+      data: {
+        name: req.body.manager.name,
+        userId: newUser.id,
+        houseOwnerId: req.body.manager.houseOwnerId,
+      },
+    });
+
+    return newManager;
+  });
+
+  return result;
+};
 
 export const UserServices = {
   createAdmin,
   createOwner,
+  createManager,
 };
