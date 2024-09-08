@@ -27,11 +27,15 @@ const createManager = z.object({
 });
 const createTenant = z.object({
   password: z.string(),
-  manager: z.object({
+  tenant: z.object({
     email: z.string().email(),
     name: z.string(),
     phoneNumber: z.string(),
-    houseOwnerId: z.string(),
+    jobInfo: z.string(),
+    numberOfFamilyMember: z.number(),
+    permanentAddress: z.string(),
+    familyInfo: z.string(),
+    someOneInVillageHomeInfo: z.string(),
   }),
 });
 

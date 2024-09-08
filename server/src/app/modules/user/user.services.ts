@@ -154,16 +154,13 @@ const createTenant = async (req: Request) => {
     const newTenant = await transactionClient.tenant.create({
       data: {
         name: req.body.tenant.name,
-        numberOfFamilyMember: req.body.tenant.numberOfFamilyMember,
-        familyInfo: req.body.tenant.familyInfo,
-        profilePhoto: req.body.tenant.profilePhoto,
-        permanentAddress: req.body.tenant.permanentAddress,
         jobInfo: req.body.tenant.jobInfo,
+        numberOfFamilyMember: req.body.tenant.numberOfFamilyMember,
+        permanentAddress: req.body.tenant.permanentAddress,
+        familyInfo: req.body.tenant.familyInfo,
         someOneInVillageHomeInfo: req.body.tenant.someOneInVillageHomeInfo,
-        nidInfoId: req.body.tenant.nidInfoId,
-        room: {
-          connect: { id: req.body.tenant.roomId },
-        },
+        phoneNumber: req.body.tenant.phoneNumber,
+        email: req.body.tenant.email,
       },
     });
 

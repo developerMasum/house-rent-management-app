@@ -105,14 +105,14 @@ model Room {
   houseId String
   house   House  @relation(fields: [houseId], references: [id])
 
-  currentTenantId String? @unique
-  currentTenant   Tenant? @relation(fields: [currentTenantId], references: [id])
+  // currentTenantId String? @unique
+  // currentTenant   Tenant? @relation(fields: [currentTenantId], references: [id])
 
   electricityBillReadings ElectricityBillReading[]
 
   payments            Payment[]
   maintenanceRequests MaintenanceRequest[]
-  leaseAgreements     LeaseAgreement[]
+  Tenant              Tenant[]
 
   @@map("rooms")
 }
@@ -134,6 +134,8 @@ model ElectricityBillReading {
 model Tenant {
   id                       String    @id @default(uuid())
   name                     String
+  email                    String
+  phoneNumber              String
   role                     UserRole? @default(TENANT)
   createdAt                DateTime  @default(now())
   updatedAt                DateTime  @updatedAt
@@ -143,15 +145,31 @@ model Tenant {
   familyInfo               String?
   numberOfFamilyMember     Int
   someOneInVillageHomeInfo String
+  isDeleted                Boolean   @default(false)
+  isMarried                Boolean   @default(false)
 
   payments            Payment[]
   maintenanceRequests MaintenanceRequest[]
-  leaseAgreements     LeaseAgreement[]
-  room                Room?
-  nidInfoId           String?
-  nidInfo             NIDInfo?             @relation(fields: [nidInfoId], references: [id])
+  roomId              String
+  room                Room                 @relation(fields: [roomId], references: [id])
+  NIDInfo             NIDInfo[]
 
   @@map("tenant")
+}
+
+model NIDInfo {
+  id            String   @id @default(uuid())
+  note          String?
+  nidNumber     String
+  nidFrontImage String
+  nidBackImage  String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  tenantId String
+  tenant   Tenant @relation(fields: [tenantId], references: [id])
+
+  @@map("nidinfo")
 }
 
 model Payment {
@@ -186,35 +204,6 @@ model MaintenanceRequest {
   tenant Tenant @relation(fields: [id], references: [id])
 
   @@map("maintenance_requests")
-}
-
-model LeaseAgreement {
-  id        String   @id @default(uuid())
-  startDate DateTime
-  endDate   DateTime
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  tenantId String
-  tenant   Tenant @relation(fields: [tenantId], references: [id])
-
-  roomId String
-  room   Room   @relation(fields: [roomId], references: [id])
-
-  @@map("lease_agreements")
-}
-
-model NIDInfo {
-  id            String   @id @default(uuid())
-  note          String?
-  nidNumber     String
-  nidFrontImage String
-  nidBackImage  String
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  Tenant        Tenant[]
-
-  @@map("nidinfo")
 }
 
 enum RequestStatus {
