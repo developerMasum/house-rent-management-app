@@ -148,11 +148,11 @@ model Tenant {
   isDeleted                Boolean   @default(false)
   isMarried                Boolean   @default(false)
 
-  payments            Payment[]
-  maintenanceRequests MaintenanceRequest[]
-  roomId              String
-  room                Room                 @relation(fields: [roomId], references: [id])
-  NIDInfo             NIDInfo[]
+  payments Payment[]
+
+  roomId  String
+  room    Room      @relation(fields: [roomId], references: [id])
+  NIDInfo NIDInfo[]
 
   @@map("tenant")
 }
@@ -200,8 +200,6 @@ model MaintenanceRequest {
 
   roomId String
   room   Room   @relation(fields: [roomId], references: [id])
-
-  tenant Tenant @relation(fields: [id], references: [id])
 
   @@map("maintenance_requests")
 }
