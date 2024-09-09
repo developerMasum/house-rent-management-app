@@ -20,3 +20,5 @@ export const roomFilterableFields: string[] = [
   "dueAmount",
   "isAvailable",
 ];
+export const tenantFilterableFields = ["name", "roomNo", "floorNo"];
+export const tenantSearchAbleFields = ["name", "roomNo", "floorNo"];
