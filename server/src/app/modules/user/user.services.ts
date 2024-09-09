@@ -161,6 +161,8 @@ const createTenant = async (req: Request) => {
         someOneInVillageHomeInfo: req.body.tenant.someOneInVillageHomeInfo,
         phoneNumber: req.body.tenant.phoneNumber,
         email: req.body.tenant.email,
+        roomId: req.body.tenant.roomId,
+        isMarried: true,
       },
     });
 

@@ -31,6 +31,7 @@ const createTenant = z.object({
     email: z.string().email(),
     name: z.string(),
     phoneNumber: z.string(),
+    roomId: z.string(),
     jobInfo: z.string(),
     numberOfFamilyMember: z.number(),
     permanentAddress: z.string(),
