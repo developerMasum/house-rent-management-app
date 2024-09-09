@@ -20,7 +20,12 @@ const createHouse = async (req: Request) => {
 
   return result;
 };
+const getAllHouses = async () => {
+  const houses = await prisma.house.findMany();
+  return houses;
+};
 
 export const HouseService = {
   createHouse,
+  getAllHouses,
 };

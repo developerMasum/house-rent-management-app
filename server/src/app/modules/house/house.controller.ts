@@ -14,7 +14,17 @@ const createHouse = catchAsync(async (req: Request, res: Response) => {
     data: result,
   });
 });
+const getAllHouses = catchAsync(async (req: Request, res: Response) => {
+  const result = await HouseService.getAllHouses();
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Houses are retrieved successfully!",
+    data: result,
+  });
+});
 
 export const HouseController = {
   createHouse,
+  getAllHouses,
 };

@@ -1,10 +1,8 @@
 import { Prisma, PrismaClient } from "@prisma/client";
 import { Request, Response } from "express";
-import ApiError from "../../../errors/ApiError";
-import httpStatus from "http-status";
+import { paymentSearchAbleFields } from "./../../constans/QueryConstans";
 import { IPaginationOptions } from "../../../interfaces/pagination";
 import { paginationHelpers } from "../../../helpers/paginationHelper";
-import { paymentSearchAbleFields } from "../../constans/QueryConstans";
 
 const prisma = new PrismaClient();
 
@@ -35,7 +33,6 @@ const getAllPayments = async (params: any, options: IPaginationOptions) => {
     });
   }
 
-  // Handle other filters
   if (Object.keys(filterData).length > 0) {
     andConditions.push({
       AND: Object.keys(filterData).map((key) => ({
