@@ -1,7 +1,10 @@
-import { PrismaClient } from "@prisma/client";
+import { Prisma, PrismaClient } from "@prisma/client";
 import { Request, Response } from "express";
 import ApiError from "../../../errors/ApiError";
 import httpStatus from "http-status";
+import { IPaginationOptions } from "../../../interfaces/pagination";
+import { paginationHelpers } from "../../../helpers/paginationHelper";
+import { roomSearchAbleFields } from "../../constans/QueryConstans";
 
 const prisma = new PrismaClient();
 
@@ -84,8 +87,90 @@ const addElectricityReading = async (req: Request) => {
 
   return result;
 };
+const getAllRooms = async (params: any, options: IPaginationOptions) => {
+  const { page, limit, skip } = paginationHelpers.calculatePagination(options);
+  const { searchTerm, ...filterData } = params;
+
+  const andConditions: Prisma.RoomWhereInput[] = [];
+
+  // Handle search term filtering
+  if (searchTerm) {
+    andConditions.push({
+      OR: roomSearchAbleFields.map((field) => ({
+        [field]: {
+          contains: searchTerm.toString(),
+          mode: "insensitive",
+        },
+      })),
+    });
+  }
+
+  // Handle other filters like room availability, rent, etc.
+  if (Object.keys(filterData).length > 0) {
+    andConditions.push({
+      AND: Object.keys(filterData).map((key) => ({
+        [key]: {
+          equals: filterData[key],
+        },
+      })),
+    });
+  }
+
+  // Combine conditions, if there are any
+  const whereConditions: Prisma.RoomWhereInput =
+    andConditions.length > 0 ? { AND: andConditions } : {};
+
+  // Fetch filtered and paginated room data
+  const rooms = await prisma.room.findMany({
+    where: whereConditions,
+    skip,
+    take: limit,
+    orderBy:
+      options.sortBy && options.sortOrder
+        ? {
+            [options.sortBy]: options.sortOrder,
+          }
+        : {
+            createdAt: "desc", // Default sorting by creation date
+          },
+    select: {
+      id: true,
+      roomNo: true,
+      floorNo: true,
+      roomRent: true,
+      advancedRent: true,
+      dueAmount: true,
+      isAvailable: true,
+      vacantFrom: true,
+      vacantTo: true,
+      house: {
+        select: {
+          name: true, // Assuming the `House` model has a `name` field
+        },
+      },
+      payments: true, // If you want to include payment details
+      maintenanceRequests: true, // If you want to include maintenance requests
+    },
+  });
+
+  // Count total number of records that match the conditions
+  const total = await prisma.room.count({
+    where: whereConditions,
+  });
+
+  // Return paginated meta data and fetched rooms
+  return {
+    meta: {
+      page,
+      limit,
+      total,
+    },
+    data: rooms,
+  };
+};
 
 export const RoomService = {
   createRoom,
   addElectricityReading,
+  getAllRooms,
 };

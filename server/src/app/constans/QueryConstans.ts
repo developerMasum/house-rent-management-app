@@ -13,3 +13,10 @@ export const paymentFilterableFields: string[] = [
   "roomNo",
   "searchTerm",
 ];
+
+export const roomSearchAbleFields = ["roomRent", "roomNo", "floorNo"];
+export const roomFilterableFields: string[] = [
+  "floorNo",
+  "dueAmount",
+  "isAvailable",
+];

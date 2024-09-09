@@ -3,6 +3,8 @@ import catchAsync from "../../../shared/catchAsync";
 import sendResponse from "../../../shared/sendResponse";
 import { Request, Response } from "express";
 import { RoomService } from "./room.service";
+import pick from "../../../shared/pick";
+import { roomFilterableFields } from "../../constans/QueryConstans";
 
 const createRoom = catchAsync(async (req: Request, res: Response) => {
   //const { admin, ...userData } = req.body;
@@ -26,8 +28,20 @@ const addElectricityReading = catchAsync(
     });
   }
 );
+const getAllRooms = catchAsync(async (req: Request, res: Response) => {
+  const filters = pick(req.query, roomFilterableFields);
+  const options = pick(req.query, ["limit", "page", "sortBy", "sortOrder"]);
+  const result = await RoomService.getAllRooms(filters, options);
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Rooms are retrieved successfully!",
+    data: result,
+  });
+});
 
 export const RoomController = {
   createRoom,
   addElectricityReading,
+  getAllRooms,
 };

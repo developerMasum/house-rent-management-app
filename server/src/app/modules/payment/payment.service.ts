@@ -1,5 +1,5 @@
 import { Prisma, PrismaClient } from "@prisma/client";
-import { Request, Response } from "express";
+import { Request } from "express";
 import { paymentSearchAbleFields } from "./../../constans/QueryConstans";
 import { IPaginationOptions } from "../../../interfaces/pagination";
 import { paginationHelpers } from "../../../helpers/paginationHelper";
