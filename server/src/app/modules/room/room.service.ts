@@ -168,9 +168,40 @@ const getAllRooms = async (params: any, options: IPaginationOptions) => {
     data: rooms,
   };
 };
+const updateRoom = async (req: Request) => {
+  const { id } = req.params;
+  const { roomNo, floorNo, roomRent, advancedRent, dueAmount, isAvailable } =
+    req.body;
+  const updatedRoom = await prisma.room.update({
+    where: {
+      id: id,
+    },
+    data: {
+      roomNo: roomNo,
+      floorNo: floorNo,
+      roomRent: roomRent,
+      advancedRent: advancedRent,
+      dueAmount: dueAmount,
+      isAvailable: isAvailable,
+    },
+  });
+  return updatedRoom;
+};
+
+const deleteRoom = async (req: Request) => {
+  const { id } = req.params;
+  const deletedRoom = await prisma.room.delete({
+    where: {
+      id: id,
+    },
+  });
+  return deletedRoom;
+};
 
 export const RoomService = {
   createRoom,
   addElectricityReading,
   getAllRooms,
+  updateRoom,
+  deleteRoom,
 };

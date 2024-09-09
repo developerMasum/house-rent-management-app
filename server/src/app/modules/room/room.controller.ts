@@ -39,9 +39,29 @@ const getAllRooms = catchAsync(async (req: Request, res: Response) => {
     data: result,
   });
 });
+const updateRoom = catchAsync(async (req: Request, res: Response) => {
+  const result = await RoomService.updateRoom(req);
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Room is updated successfully!",
+    data: result,
+  });
+});
+const deleteRoom = catchAsync(async (req: Request, res: Response) => {
+  const result = await RoomService.deleteRoom(req);
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Room is deleted successfully!",
+    data: result,
+  });
+});
 
 export const RoomController = {
   createRoom,
   addElectricityReading,
   getAllRooms,
+  updateRoom,
+  deleteRoom,
 };
