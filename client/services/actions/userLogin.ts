@@ -5,7 +5,7 @@ import setAccessToken from "./setAccessToken";
 import { jwtDecode } from "jwt-decode";
 
 export const signInUser = async (data: FieldValues) => {
-  const res = await fetch("https://gym-server-lac.vercel.app/api/login", {
+  const res = await fetch("http://localhost:5000/api/login", {
     method: "POST",
     headers: {
       "Content-type": "application/json",

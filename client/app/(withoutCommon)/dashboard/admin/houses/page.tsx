@@ -1,5 +1,11 @@
+import House from "./Components/House";
+
 const HousesPage = () => {
-  return <div>HousesPage</div>;
+  return (
+    <div>
+      <House />
+    </div>
+  );
 };
 
 export default HousesPage;

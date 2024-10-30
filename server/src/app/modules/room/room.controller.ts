@@ -81,6 +81,15 @@ const getSingleElectricityRiding = catchAsync(
     });
   }
 );
+const getSingleRoom = catchAsync(async (req: Request, res: Response) => {
+  const result = await RoomService.getSingleRoom(req);
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Single room is retrieved successfully!",
+    data: result,
+  });
+});
 
 export const RoomController = {
   createRoom,
@@ -90,4 +99,5 @@ export const RoomController = {
   deleteRoom,
   getAllElectricity,
   getSingleElectricityRiding,
+  getSingleRoom,
 };

@@ -41,12 +41,12 @@ export const drawerItems = (role: UserRole): ISidebarItem[] => {
         },
         {
           title: "Rooms",
-          path: `${role}/Rooms`,
+          path: `${role}/rooms`,
           icon: GiTeacher,
         },
         {
-          title: "Tenants",
-          path: `${role}/tenants`,
+          title: "Rents",
+          path: `${role}/rents`,
           icon: BadgeDollarSign,
         },
         {

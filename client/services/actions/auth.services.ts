@@ -37,7 +37,7 @@
 
 // export const getNewAccessToken = async () => {
 //   return await axiosInstance({
-//     url: "https://gym-server-lac.vercel.app/api/login/refresh-token",
+//     url: "http://localhost:5000/api/login/refresh-token",
 //     method: "POST",
 //     headers: {
 //       "Content-Type": "application/json",

@@ -211,7 +211,7 @@ const getAllRooms = async (params: any, options: IPaginationOptions) => {
             [options.sortBy]: options.sortOrder,
           }
         : {
-            createdAt: "desc", // Default sorting by creation date
+            createdAt: "asc", // Default sorting by creation date
           },
     select: {
       id: true,
@@ -296,7 +296,40 @@ const getSingleElectricityRiding = async (req: Request) => {
   });
   return electricity;
 };
+const getSingleRoom = async (req: Request) => {
+  const { id } = req.params;
+  console.log(id);
+  const roomInfo = await prisma.room.findUniqueOrThrow({
+    where: {
+      id: id,
+    },
+  });
+  const userInfo = await prisma.tenant.findFirstOrThrow({
+    where: {
+      roomId: roomInfo.id,
+    },
+  });
+  const electricity = await prisma.electricityBillReading.findMany({
+    where: {
+      roomId: roomInfo.id,
+    },
+    select: {
+      reading: true,
+      year: true,
+      monthName: true,
+      updatedAt: true,
+    },
+    orderBy: {
+      monthName: "asc",
+    },
+  });
 
+  return {
+    roomInfo,
+    userInfo,
+    electricity,
+  };
+};
 export const RoomService = {
   createRoom,
   addElectricityReading,
@@ -305,4 +338,5 @@ export const RoomService = {
   deleteRoom,
   getAllElectricity,
   getSingleElectricityRiding,
+  getSingleRoom,
 };
