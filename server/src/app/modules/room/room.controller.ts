@@ -58,10 +58,36 @@ const deleteRoom = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const getAllElectricity = catchAsync(async (req: Request, res: Response) => {
+  const filters = pick(req.query, roomFilterableFields);
+  const options = pick(req.query, ["limit", "page", "sortBy", "sortOrder"]);
+  const result = await RoomService.getAllElectricity(filters, options);
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Rooms are retrieved successfully!",
+    data: result,
+  });
+});
+
+const getSingleElectricityRiding = catchAsync(
+  async (req: Request, res: Response) => {
+    const result = await RoomService.getSingleElectricityRiding(req);
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: "single electricity is retrieved successfully!",
+      data: result,
+    });
+  }
+);
+
 export const RoomController = {
   createRoom,
   addElectricityReading,
   getAllRooms,
   updateRoom,
   deleteRoom,
+  getAllElectricity,
+  getSingleElectricityRiding,
 };
