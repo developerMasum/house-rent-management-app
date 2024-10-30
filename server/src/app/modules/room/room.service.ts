@@ -85,6 +85,7 @@ const addElectricityReading = async (req: Request) => {
       year: year,
       reading: reading,
       roomId: roomId,
+      perUnitPrice: 10,
     },
   });
 

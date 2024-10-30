@@ -118,12 +118,13 @@ model Room {
 }
 
 model ElectricityBillReading {
-  id        String @id @default(uuid())
-  monthName String
-  year      Int
-  reading   Int
-  roomId    String
-  room      Room   @relation(fields: [roomId], references: [id])
+  id           String @id @default(uuid())
+  monthName    String
+  perUnitPrice Int?
+  year         Int
+  reading      Int
+  roomId       String
+  room         Room   @relation(fields: [roomId], references: [id])
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
