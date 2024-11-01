@@ -89,32 +89,44 @@ model House {
 }
 
 model Room {
-  id           String    @id @default(uuid())
-  roomNo       Int       @unique
-  floorNo      Int
-  roomRent     Int
-  advancedRent Int
-  dueAmount    Int
-  isAvailable  Boolean   @default(true)
-  // attachedBathRoom Boolean
-  vacantFrom   DateTime
-  vacantTo     DateTime?
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
+  id               String    @id @default(uuid())
+  roomNo           Int       @unique
+  floorNo          Int
+  roomRent         Int
+  trashBill        Int?
+  remark           String?
+  isAvailable      Boolean   @default(true)
+  vacantFrom       DateTime?
+  vacantTo         DateTime?
+  attachedBathRoom Boolean   @default(false)
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
 
   houseId String
   house   House  @relation(fields: [houseId], references: [id])
-
-  // currentTenantId String? @unique
-  // currentTenant   Tenant? @relation(fields: [currentTenantId], references: [id])
 
   electricityBillReadings ElectricityBillReading[]
 
   payments            Payment[]
   maintenanceRequests MaintenanceRequest[]
-  Tenant              Tenant[]
+  tenant              Tenant[]
+  rentInfo            RentInfo[]
 
   @@map("rooms")
+}
+
+model RentInfo {
+  id           String @id @default(uuid())
+  advancedRent Int?
+  dueAmount    Int?
+  totalRent    Int
+
+  roomId    String
+  room      Room     @relation(fields: [roomId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("rent_info")
 }
 
 model ElectricityBillReading {
@@ -153,7 +165,7 @@ model Tenant {
 
   roomId  String
   room    Room      @relation(fields: [roomId], references: [id])
-  NIDInfo NIDInfo[]
+  nIDInfo NIDInfo[]
 
   @@map("tenant")
 }
@@ -176,18 +188,17 @@ model NIDInfo {
 model Payment {
   id          String        @id @default(uuid())
   amount      Int
-  paymentDate DateTime
-  method      String
-  invoiceUrl  String
+  paymentDate DateTime      @default(now())
+  method      PaymentMethod @default(CARD)
+  invoiceUrl  String?
   status      RequestStatus
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
 
-  tenantId String
-  tenant   Tenant @relation(fields: [tenantId], references: [id])
-
-  roomId String
-  room   Room   @relation(fields: [roomId], references: [id])
+  roomId   String
+  room     Room    @relation(fields: [roomId], references: [id])
+  Tenant   Tenant? @relation(fields: [tenantId], references: [id])
+  tenantId String?
 
   @@map("payments")
 }
@@ -209,6 +220,15 @@ enum RequestStatus {
   PENDING
   APPROVED
   REJECTED
+}
+
+enum PaymentMethod {
+  CASH
+  BANK
+  CARD
+  BKASH
+  NAGAD
+  ROCKET
 }
 
 enum UserRole {

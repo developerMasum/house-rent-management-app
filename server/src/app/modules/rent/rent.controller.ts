@@ -27,7 +27,17 @@ const getSingleRent = catchAsync(async (req: Request, res: Response) => {
     data: result,
   });
 });
+const updateRent = catchAsync(async (req: Request, res: Response) => {
+  const result = await RentService.updateRent(req);
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Room rent is updated successfully!",
+    data: result,
+  });
+});
 export const RentController = {
   getAllRentByMonth,
   getSingleRent,
+  updateRent,
 };

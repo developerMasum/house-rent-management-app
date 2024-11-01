@@ -7,15 +7,60 @@ import { paginationHelpers } from "../../../helpers/paginationHelper";
 const prisma = new PrismaClient();
 
 const createPayment = async (req: Request) => {
-  // Log the incoming request body
-  console.log(req.body);
+  const payment = await prisma.$transaction(async (tx) => {
+    // Retrieve and calculate new due amount
+    const due = await tx.rentInfo.findFirst({
+      where: {
+        roomId: req.body.roomId,
+      },
+      select: {
+        dueAmount: true,
+        totalRent: true,
+      },
+    });
 
-  return await prisma.payment.create({
-    data: {
-      ...req.body,
-    },
+    if (!due) {
+      throw new Error("Rent information not found for the provided room ID.");
+    }
+
+    // Calculate the new due amount
+    const newDue = due.totalRent - req.body.amount;
+
+    // Update the due amount in the rentInfo table
+    await tx.rentInfo.updateMany({
+      where: {
+        roomId: req.body.roomId,
+      },
+      data: {
+        dueAmount: newDue,
+      },
+    });
+
+    // Create a new payment entry
+    const newPayment = await tx.payment.create({
+      data: {
+        amount: req.body.amount,
+        invoiceUrl: req.body.invoiceUrl,
+        method: req.body.method,
+        room: {
+          connect: {
+            id: req.body.roomId,
+          },
+        },
+      },
+      select: {
+        id: true,
+        amount: true,
+        roomId: true,
+      },
+    });
+
+    return newPayment;
   });
+
+  return payment;
 };
+
 const getAllPayments = async (params: any, options: IPaginationOptions) => {
   const { page, limit, skip } = paginationHelpers.calculatePagination(options);
   const { searchTerm, ...filterData } = params;

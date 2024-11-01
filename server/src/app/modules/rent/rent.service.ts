@@ -1,16 +1,17 @@
 import prisma from "../../../shared/prisma";
 
 const getAllRentByMonth = async () => {
+  const today = new Date();
+  const isFirstDayOfMonth = today.getDate() === 1;
+
   const roomInfo = await prisma.room.findMany({
     select: {
       id: true,
       roomNo: true,
       floorNo: true,
       roomRent: true,
-      advancedRent: true,
-      dueAmount: true,
+      trashBill: true,
       isAvailable: true,
-
       electricityBillReadings: {
         select: {
           reading: true,
@@ -22,52 +23,72 @@ const getAllRentByMonth = async () => {
     },
   });
 
-  const roomRentDetails = roomInfo.map((room) => {
-    // Sort readings by year and month for reliable calculations
-    const sortedReadings = room.electricityBillReadings.sort((a, b) => {
-      return (
-        new Date(`${a.monthName} 1, ${a.year}`).getTime() -
-        new Date(`${b.monthName} 1, ${b.year}`).getTime()
-      );
-    });
+  const roomRentDetails = await Promise.all(
+    roomInfo.map(async (room) => {
+      const sortedReadings = room.electricityBillReadings.sort((a, b) => {
+        return (
+          new Date(`${a.monthName} 1, ${a.year}`).getTime() -
+          new Date(`${b.monthName} 1, ${b.year}`).getTime()
+        );
+      });
 
-    // Get the last two readings (current and previous month)
-    const currentMonthReading = sortedReadings[sortedReadings.length - 1];
-    const previousMonthReading = sortedReadings[sortedReadings.length - 2];
+      const currentMonthReading = sortedReadings[sortedReadings.length - 1];
+      const previousMonthReading = sortedReadings[sortedReadings.length - 2];
 
-    // Initialize electricity bill and unit usage
-    let electricityBill = 0;
-    let electricityUnit = 0;
+      let electricityBill = 0;
+      let electricityUnit = 0;
 
-    // Calculate electricity bill and unit usage if both readings are available
-    if (previousMonthReading && currentMonthReading) {
-      electricityUnit =
-        currentMonthReading.reading - previousMonthReading.reading;
-      electricityBill =
-        electricityUnit * (currentMonthReading.perUnitPrice || 0);
-    }
+      if (previousMonthReading && currentMonthReading) {
+        electricityUnit =
+          currentMonthReading.reading - previousMonthReading.reading;
+        electricityBill =
+          electricityUnit * (currentMonthReading.perUnitPrice || 0);
+      }
 
-    // Calculate the total rent including electricity bill and due amount
-    const totalRent = room.roomRent + room.dueAmount + electricityBill;
+      // Get due amount and add previous dues if any
+      let dueAmountRecord = await prisma.rentInfo.findFirst({
+        where: { roomId: room.id },
+        select: { dueAmount: true },
+      });
 
-    return {
-      RoomId: room.id,
-      roomNo: room.roomNo,
-      floorNo: room.floorNo,
-      roomRent: room.roomRent,
-      dueAmount: room.dueAmount,
-      electricityUnit,
-      electricityBill,
-      totalRent,
-      isAvailable: room.isAvailable,
-      LastMonthElectricityReadings: previousMonthReading,
-      PresentMonthElectricityReadings: currentMonthReading,
-    };
-  });
+      let dueAmount = dueAmountRecord?.dueAmount ?? 0;
+
+      // If today is the 1st, set isPaid to false and carry over due amount
+      let isPaid = false;
+      if (isFirstDayOfMonth) {
+        isPaid = false;
+      }
+
+      // Calculate total rent with electricity and trash bills
+      const totalRent = room.roomRent + electricityBill + (room.trashBill ?? 0);
+
+      // Add unpaid totalRent to dueAmount if rent not paid
+      if (!isPaid) {
+        dueAmount += totalRent;
+      }
+
+      return {
+        RoomId: room.id,
+        roomNo: room.roomNo,
+        floorNo: room.floorNo,
+        roomRent: room.roomRent,
+        trashBill: room.trashBill,
+        electricityUnit,
+        electricityBill,
+        totalRent,
+        dueAmount,
+        isAvailable: room.isAvailable,
+        isPaid,
+        LastMonthElectricityReadings: previousMonthReading,
+        PresentMonthElectricityReadings: currentMonthReading,
+      };
+    })
+  );
 
   return roomRentDetails;
 };
 
+//
 const getSingleRent = async (req: Request) => {
   const { id } = req.params;
   const room = await prisma.room.findUniqueOrThrow({
@@ -87,8 +108,46 @@ const getSingleRent = async (req: Request) => {
   });
   return room;
 };
+const updateRent = async (req: Request) => {
+  const { id } = req.params;
+  const { payment } = req.body;
+  console.log(payment);
 
+  // Check if payment is provided and is a number
+  if (typeof payment !== "number") {
+    return { error: "Payment is required and must be a number" };
+  }
+
+  try {
+    // Find the room to access roomRent
+    const room = await prisma.room.findUnique({
+      where: { id: id },
+    });
+
+    if (!room) {
+      return { error: "Room not found" };
+    }
+
+    // Calculate dueAmount based on payment
+    const dueAmount = room.totalRent - payment;
+
+    // Update the room with payment details
+    const updatedRoom = await prisma.room.update({
+      where: { id: id },
+      data: {
+        isPaid: true,
+        dueAmount: dueAmount > 0 ? dueAmount : 0,
+      },
+    });
+
+    return { updatedRoom, dueAmount };
+  } catch (error) {
+    console.error("Error updating rent:", error);
+    return { error: "Internal server error" };
+  }
+};
 export const RentService = {
   getAllRentByMonth,
   getSingleRent,
+  updateRent,
 };

@@ -218,19 +218,64 @@ const getAllRooms = async (params: any, options: IPaginationOptions) => {
       roomNo: true,
       floorNo: true,
       roomRent: true,
-      advancedRent: true,
-      dueAmount: true,
       isAvailable: true,
       vacantFrom: true,
       vacantTo: true,
       house: {
         select: {
-          name: true, // Assuming the `House` model has a `name` field
+          name: true,
         },
       },
-      payments: true, // If you want to include payment details
-      maintenanceRequests: true, // If you want to include maintenance requests
+      payments: true,
+      maintenanceRequests: true,
+      electricityBillReadings: {
+        select: {
+          reading: true,
+          monthName: true,
+          year: true,
+          perUnitPrice: true,
+        },
+      },
     },
+  });
+
+  // Map over the rooms to calculate room rent details including electricity
+  const roomRentDetails = rooms.map((room) => {
+    const sortedReadings = room.electricityBillReadings.sort((a, b) => {
+      return (
+        new Date(`${a.monthName} 1, ${a.year}`).getTime() -
+        new Date(`${b.monthName} 1, ${b.year}`).getTime()
+      );
+    });
+
+    // Get the last two readings (current and previous month)
+    const currentMonthReading = sortedReadings[sortedReadings.length - 1];
+    const previousMonthReading = sortedReadings[sortedReadings.length - 2];
+
+    // Initialize electricity bill and unit usage
+    let electricityBill = 0;
+    let electricityUnit = 0;
+
+    // Calculate electricity bill and unit usage if both readings are available
+    if (previousMonthReading && currentMonthReading) {
+      electricityUnit =
+        currentMonthReading.reading - previousMonthReading.reading;
+      electricityBill =
+        electricityUnit * (currentMonthReading.perUnitPrice || 0);
+    }
+
+    // Calculate the total rent including electricity bill and due amount
+    const totalRent = room.roomRent + room.dueAmount + electricityBill;
+
+    return {
+      ...room,
+      electricityBill,
+      electricityUnit,
+      totalRent,
+      isPaid: false, // Default to false, adjust as needed
+      LastMonthElectricityReadings: previousMonthReading,
+      PresentMonthElectricityReadings: currentMonthReading,
+    };
   });
 
   // Count total number of records that match the conditions
@@ -238,16 +283,17 @@ const getAllRooms = async (params: any, options: IPaginationOptions) => {
     where: whereConditions,
   });
 
-  // Return paginated meta data and fetched rooms
+  // Return paginated meta data and fetched rooms with rent details
   return {
     meta: {
       page,
       limit,
       total,
     },
-    data: rooms,
+    data: roomRentDetails,
   };
 };
+
 const updateRoom = async (req: Request) => {
   const { id } = req.params;
   const { roomNo, floorNo, roomRent, advancedRent, dueAmount, isAvailable } =
