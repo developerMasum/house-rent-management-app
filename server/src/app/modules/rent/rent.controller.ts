@@ -19,7 +19,7 @@ const getAllRentByMonth = catchAsync(async (req: Request, res: Response) => {
   });
 });
 const getSingleRent = catchAsync(async (req: Request, res: Response) => {
-  const result = await RentService.getSingleRent(req);
+  const result = await RentService.getSingleRent(req as any);
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
@@ -28,7 +28,7 @@ const getSingleRent = catchAsync(async (req: Request, res: Response) => {
   });
 });
 const updateRent = catchAsync(async (req: Request, res: Response) => {
-  const result = await RentService.updateRent(req);
+  const result = await RentService.updateRent(req as any);
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
