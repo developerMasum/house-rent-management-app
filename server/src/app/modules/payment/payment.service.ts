@@ -121,11 +121,11 @@ const getAllPayments = async (params: any, options: IPaginationOptions) => {
   });
 
   return {
-    meta: {
-      page,
-      limit,
-      total,
-    },
+    // meta: {
+    //   page,
+    //   limit,
+    //   total,
+    // },
     data: payments,
   };
 };
