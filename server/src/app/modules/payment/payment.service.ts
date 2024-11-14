@@ -44,7 +44,7 @@ const createPayment = async (req: Request) => {
         method: req.body.method,
         room: {
           connect: {
-            id: req.body.roomId,
+            // id: req.body.roomId,
           },
         },
       },
