@@ -1,3 +1,4 @@
+import { Request } from "express";
 import prisma from "../../../shared/prisma";
 
 const getAllRentByMonth = async () => {
@@ -113,39 +114,38 @@ const updateRent = async (req: Request) => {
   const { payment } = req.body;
   console.log(payment);
 
-  // Check if payment is provided and is a number
-  if (typeof payment !== "number") {
-    return { error: "Payment is required and must be a number" };
-  }
+  // const numericPayment = Number(payment);
 
-  try {
-    // Find the room to access roomRent
-    const room = await prisma.room.findUnique({
-      where: { id: id },
-    });
+  // if (isNaN(numericPayment)) {
+  //   return { error: "Payment is required and must be a valid number" };
+  // }
 
-    if (!room) {
-      return { error: "Room not found" };
-    }
+  // try {
+  //   const room = await prisma.room.findUnique({
+  //     where: { id },
+  //   });
 
-    // Calculate dueAmount based on payment
-    const dueAmount = room.totalRent - payment;
+  //   if (!room) {
+  //     return { error: "Room not found" };
+  //   }
 
-    // Update the room with payment details
-    const updatedRoom = await prisma.room.update({
-      where: { id: id },
-      data: {
-        isPaid: true,
-        dueAmount: dueAmount > 0 ? dueAmount : 0,
-      },
-    });
+  //   const dueAmount = room.totalRent - numericPayment;
 
-    return { updatedRoom, dueAmount };
-  } catch (error) {
-    console.error("Error updating rent:", error);
-    return { error: "Internal server error" };
-  }
+  //   const updatedRoom = await prisma.room.update({
+  //     where: { id },
+  //     data: {
+  //       isPaid: true,
+  //       dueAmount: dueAmount > 0 ? dueAmount : 0,
+  //     },
+  //   });
+
+  //   return { updatedRoom, dueAmount };
+  // } catch (error) {
+  //   console.error("Error updating rent:", error);
+  //   return { error: "Internal server error" };
+  // }
 };
+
 export const RentService = {
   getAllRentByMonth,
   getSingleRent,

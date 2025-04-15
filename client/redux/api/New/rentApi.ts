@@ -21,6 +21,18 @@ export const rentApi = baseApi.injectEndpoints({
       },
       providesTags: [tagTypes.user],
     }),
+    updateRent: build.mutation({
+      query: ({ id, body }) => {
+        console.log("from redux", id, body);
+        return {
+          url: `/rents/payment/${id}`,
+          method: "PUT",
+          body, // ✅ use `body` instead of `data`
+        };
+      },
+      // invalidatesTags: [tagTypes.donner, tagTypes.user],
+    }),
+
     deleteBlog: build.mutation({
       query: (id) => ({
         url: `/blog/${id}`,
@@ -31,4 +43,8 @@ export const rentApi = baseApi.injectEndpoints({
   }),
 });
 
-export const { useGetAllRentsQuery, useGetSingleRentQuery } = rentApi;
+export const {
+  useGetAllRentsQuery,
+  useUpdateRentMutation,
+  useGetSingleRentQuery,
+} = rentApi;

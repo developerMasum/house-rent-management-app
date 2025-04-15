@@ -350,31 +350,7 @@ const getSingleRoom = async (req: Request) => {
       id: id,
     },
   });
-  const userInfo = await prisma.tenant.findFirstOrThrow({
-    where: {
-      roomId: roomInfo.id,
-    },
-  });
-  const electricity = await prisma.electricityBillReading.findMany({
-    where: {
-      roomId: roomInfo.id,
-    },
-    select: {
-      reading: true,
-      year: true,
-      monthName: true,
-      updatedAt: true,
-    },
-    orderBy: {
-      monthName: "asc",
-    },
-  });
-
-  return {
-    roomInfo,
-    userInfo,
-    electricity,
-  };
+  return roomInfo;
 };
 export const RoomService = {
   createRoom,

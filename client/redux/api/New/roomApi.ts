@@ -21,13 +21,6 @@ export const roomApi = baseApi.injectEndpoints({
       },
       providesTags: [tagTypes.user],
     }),
-    deleteBlog: build.mutation({
-      query: (id) => ({
-        url: `/blog/${id}`,
-        method: "DELETE",
-      }),
-      invalidatesTags: [tagTypes.admin],
-    }),
   }),
 });
 

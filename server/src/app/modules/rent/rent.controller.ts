@@ -28,7 +28,10 @@ const getSingleRent = catchAsync(async (req: Request, res: Response) => {
   });
 });
 const updateRent = catchAsync(async (req: Request, res: Response) => {
-  const result = await RentService.updateRent(req as any);
+  const { id } = req.params;
+  const data = req.body;
+  const result = await RentService.updateRent(id, data);
+
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,

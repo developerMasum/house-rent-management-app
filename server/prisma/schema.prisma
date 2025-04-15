@@ -68,14 +68,15 @@ model Manager {
 }
 
 model House {
-  id             String   @id @default(uuid())
-  name           String
-  location       String
-  numberOfRooms  Int
-  floorCount     Int
-  numberOfMeters Int
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  id                String   @id @default(uuid())
+  name              String
+  location          String
+  numberOfRooms     Int
+  floorCount        Int
+  numberOfMeters    Int
+  numberOfFreeRooms Int?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
 
   ownerId String
   owner   HouseOwner @relation(fields: [ownerId], references: [id])
