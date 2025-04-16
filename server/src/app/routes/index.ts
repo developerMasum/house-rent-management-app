@@ -6,6 +6,7 @@ import { PaymentRoutes } from "../modules/payment/payment.route";
 import { MaintenanceRoutes } from "../modules/maintanance/maintenance.route";
 import { TenantRoutes } from "../modules/tenant/tenant.route";
 import { RentRoutes } from "../modules/rent/rent.routes";
+import { NidRoutes } from "../modules/nid/nid.route";
 
 const router = express.Router();
 
@@ -17,6 +18,10 @@ const moduleRoutes = [
   {
     path: "/tenant",
     route: TenantRoutes,
+  },
+  {
+    path: "/tenant/nid",
+    route: NidRoutes,
   },
   {
     path: "/house",
