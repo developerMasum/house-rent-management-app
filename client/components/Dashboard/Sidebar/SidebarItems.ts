@@ -45,6 +45,11 @@ export const drawerItems = (role: UserRole): ISidebarItem[] => {
           icon: GiTeacher,
         },
         {
+          title: "Electricity",
+          path: `${role}/electricity`,
+          icon: GiTeacher,
+        },
+        {
           title: "Rents",
           path: `${role}/rents`,
           icon: BadgeDollarSign,

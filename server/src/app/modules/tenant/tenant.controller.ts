@@ -17,6 +17,15 @@ const getAllTenants = catchAsync(async (req: Request, res: Response) => {
     data: result,
   });
 });
+const getSingleTenant = catchAsync(async (req: Request, res: Response) => {
+  const result = await TenantService.getSingleTenant(req);
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Single Tenant is retrieved successfully!",
+    data: result,
+  });
+});
 const updateTenant = catchAsync(async (req: Request, res: Response) => {
   const result = await TenantService.updateTenant(req);
   sendResponse(res, {
@@ -38,6 +47,7 @@ const deleteTenant = catchAsync(async (req: Request, res: Response) => {
 
 export const TenantController = {
   getAllTenants,
+  getSingleTenant,
   updateTenant,
   deleteTenant,
 };

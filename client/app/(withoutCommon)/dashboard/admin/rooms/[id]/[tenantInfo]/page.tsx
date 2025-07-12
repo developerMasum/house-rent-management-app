@@ -4,7 +4,7 @@ import React from "react";
 
 const TenantInformation = () => {
   const { tenantInfo } = useParams();
-  console.log(tenantInfo);
+
   return (
     <div>
       TenantInformation: {tenantInfo}

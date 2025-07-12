@@ -36,137 +36,6 @@ const createRoom = async (req: Request) => {
   return newRoom;
 };
 
-const addElectricityReading = async (req: Request) => {
-  const { monthName, year, reading, roomId } = req.body;
-
-  // Check if there is already a reading for the same month and year
-  const isReadingRepeated = await prisma.electricityBillReading.findFirst({
-    where: {
-      monthName: monthName,
-      year: year,
-      roomId: roomId,
-    },
-  });
-
-  if (isReadingRepeated) {
-    throw new Error("Reading for this month and year already exists.");
-  }
-
-  const previousReading = await prisma.electricityBillReading.findFirst({
-    where: {
-      roomId: roomId,
-      AND: [
-        {
-          year: {
-            lt: year,
-          },
-        },
-        {
-          monthName: {
-            lt: monthName,
-          },
-        },
-      ],
-    },
-    orderBy: {
-      createdAt: "desc",
-    },
-  });
-
-  if (previousReading && reading < previousReading.reading) {
-    throw new Error(
-      "New reading cannot be less than the previous month's reading."
-    );
-  }
-
-  const result = await prisma.electricityBillReading.create({
-    data: {
-      monthName: monthName,
-      year: year,
-      reading: reading,
-      roomId: roomId,
-      perUnitPrice: 10,
-    },
-  });
-
-  return result;
-};
-const getAllElectricity = async (params: any, options: IPaginationOptions) => {
-  const { page, limit, skip } = paginationHelpers.calculatePagination(options);
-  const { searchTerm, ...filterData } = params;
-
-  const andConditions: Prisma.RoomWhereInput[] = [];
-
-  // Handle search term filtering
-  if (searchTerm) {
-    andConditions.push({
-      OR: electricitySearchAbleFields.map((field) => ({
-        [field]: {
-          contains: searchTerm.toString(),
-          mode: "insensitive",
-        },
-      })),
-    });
-  }
-
-  // Handle other filters like room availability, rent, etc.
-  if (Object.keys(filterData).length > 0) {
-    andConditions.push({
-      AND: Object.keys(filterData).map((key) => ({
-        [key]: {
-          equals: filterData[key],
-        },
-      })),
-    });
-  }
-
-  // Combine conditions, if there are any
-  const whereConditions: Prisma.RoomWhereInput =
-    andConditions.length > 0 ? { AND: andConditions } : {};
-
-  // Fetch filtered and paginated room data
-  const electricity = await prisma.electricityBillReading.findMany({
-    where: whereConditions,
-    skip,
-    take: limit,
-    orderBy:
-      options.sortBy && options.sortOrder
-        ? {
-            [options.sortBy]: options.sortOrder,
-          }
-        : {
-            createdAt: "desc", // Default sorting by creation date
-          },
-    select: {
-      id: true,
-      monthName: true,
-      year: true,
-      reading: true,
-      roomId: true,
-      room: {
-        select: {
-          roomNo: true,
-          floorNo: true,
-        },
-      },
-    },
-  });
-
-  // Count total number of records that match the conditions
-  const total = await prisma.room.count({
-    where: whereConditions,
-  });
-
-  // Return paginated meta data and fetched rooms
-  return {
-    meta: {
-      page,
-      limit,
-      total,
-    },
-    data: electricity,
-  };
-};
 const getAllRooms = async (params: any, options: IPaginationOptions) => {
   const { page, limit, skip } = paginationHelpers.calculatePagination(options);
   const { searchTerm, ...filterData } = params;
@@ -324,24 +193,6 @@ const deleteRoom = async (req: Request) => {
   return deletedRoom;
 };
 
-const getSingleElectricityRiding = async (req: Request) => {
-  const { id } = req.params;
-  console.log(id);
-  const electricity = await prisma.electricityBillReading.findUniqueOrThrow({
-    where: {
-      id: id,
-    },
-    include: {
-      room: {
-        select: {
-          roomNo: true,
-          floorNo: true,
-        },
-      },
-    },
-  });
-  return electricity;
-};
 const getSingleRoom = async (req: Request) => {
   const { id } = req.params;
   console.log(id);
@@ -354,11 +205,8 @@ const getSingleRoom = async (req: Request) => {
 };
 export const RoomService = {
   createRoom,
-  addElectricityReading,
   getAllRooms,
   updateRoom,
   deleteRoom,
-  getAllElectricity,
-  getSingleElectricityRiding,
   getSingleRoom,
 };

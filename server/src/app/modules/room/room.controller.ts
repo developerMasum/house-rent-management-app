@@ -16,18 +16,7 @@ const createRoom = catchAsync(async (req: Request, res: Response) => {
     data: result,
   });
 });
-const addElectricityReading = catchAsync(
-  async (req: Request, res: Response) => {
-    //const { admin, ...userData } = req.body;
-    const result = await RoomService.addElectricityReading(req);
-    sendResponse(res, {
-      statusCode: httpStatus.OK,
-      success: true,
-      message: "electricity reading added successfully!",
-      data: result,
-    });
-  }
-);
+
 const getAllRooms = catchAsync(async (req: Request, res: Response) => {
   const filters = pick(req.query, roomFilterableFields);
   const options = pick(req.query, ["limit", "page", "sortBy", "sortOrder"]);
@@ -58,29 +47,6 @@ const deleteRoom = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-const getAllElectricity = catchAsync(async (req: Request, res: Response) => {
-  const filters = pick(req.query, roomFilterableFields);
-  const options = pick(req.query, ["limit", "page", "sortBy", "sortOrder"]);
-  const result = await RoomService.getAllElectricity(filters, options);
-  sendResponse(res, {
-    statusCode: httpStatus.OK,
-    success: true,
-    message: "Rooms are retrieved successfully!",
-    data: result,
-  });
-});
-
-const getSingleElectricityRiding = catchAsync(
-  async (req: Request, res: Response) => {
-    const result = await RoomService.getSingleElectricityRiding(req);
-    sendResponse(res, {
-      statusCode: httpStatus.OK,
-      success: true,
-      message: "single electricity is retrieved successfully!",
-      data: result,
-    });
-  }
-);
 const getSingleRoom = catchAsync(async (req: Request, res: Response) => {
   const result = await RoomService.getSingleRoom(req);
   sendResponse(res, {
@@ -93,11 +59,8 @@ const getSingleRoom = catchAsync(async (req: Request, res: Response) => {
 
 export const RoomController = {
   createRoom,
-  addElectricityReading,
   getAllRooms,
   updateRoom,
   deleteRoom,
-  getAllElectricity,
-  getSingleElectricityRiding,
   getSingleRoom,
 };

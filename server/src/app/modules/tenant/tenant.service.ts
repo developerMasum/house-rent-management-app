@@ -87,6 +87,23 @@ const getAllTenants = async (params: any, options: IPaginationOptions) => {
     data: tenants,
   };
 };
+const getSingleTenant = async (req: Request) => {
+  const { id } = req.params;
+  const result = await prisma.tenant.findFirstOrThrow({
+    where: {
+      roomId: id,
+    },
+    include: {
+      room: true,
+      payments: true,
+      nIDInfo: true,
+    },
+  });
+  if (!result) {
+    throw new Error("Tenant not found");
+  }
+  return result;
+};
 
 const updateTenant = async (req: Request) => {
   const { id } = req.params;
@@ -138,6 +155,7 @@ const deleteTenant = async (req: Request) => {
 
 export const TenantService = {
   getAllTenants,
+  getSingleTenant,
   updateTenant,
   deleteTenant,
 };
