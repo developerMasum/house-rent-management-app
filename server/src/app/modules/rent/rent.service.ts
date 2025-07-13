@@ -1,7 +1,8 @@
 import { Request } from "express";
 import prisma from "../../../shared/prisma";
 
-const getAllRentByMonth = async () => {
+const getAllRentByMonth = async ({ filters, options }) => {
+  const { monthName, year } = filters || {}; // e.g., { monthName: "June", year: 2025 }
   const today = new Date();
   const isFirstDayOfMonth = today.getDate() === 1;
 
@@ -26,6 +27,7 @@ const getAllRentByMonth = async () => {
 
   const roomRentDetails = await Promise.all(
     roomInfo.map(async (room) => {
+      // Sort readings by date
       const sortedReadings = room.electricityBillReadings.sort((a, b) => {
         return (
           new Date(`${a.monthName} 1, ${a.year}`).getTime() -
@@ -33,11 +35,25 @@ const getAllRentByMonth = async () => {
         );
       });
 
-      const currentMonthReading = sortedReadings[sortedReadings.length - 1];
-      const previousMonthReading = sortedReadings[sortedReadings.length - 2];
+      let currentMonthReading, previousMonthReading;
 
-      let electricityBill = 0;
+      // Filter based on selected month
+      if (monthName && year) {
+        const index = sortedReadings.findIndex(
+          (r) => r.monthName === monthName && r.year === Number(year)
+        );
+
+        if (index >= 1) {
+          previousMonthReading = sortedReadings[index - 1];
+          currentMonthReading = sortedReadings[index];
+        }
+      } else {
+        currentMonthReading = sortedReadings[sortedReadings.length - 1];
+        previousMonthReading = sortedReadings[sortedReadings.length - 2];
+      }
+
       let electricityUnit = 0;
+      let electricityBill = 0;
 
       if (previousMonthReading && currentMonthReading) {
         electricityUnit =
@@ -46,24 +62,20 @@ const getAllRentByMonth = async () => {
           electricityUnit * (currentMonthReading.perUnitPrice || 0);
       }
 
-      // Get due amount and add previous dues if any
       let dueAmountRecord = await prisma.rentInfo.findFirst({
         where: { roomId: room.id },
         select: { dueAmount: true },
       });
 
       let dueAmount = dueAmountRecord?.dueAmount ?? 0;
-
-      // If today is the 1st, set isPaid to false and carry over due amount
       let isPaid = false;
+
       if (isFirstDayOfMonth) {
         isPaid = false;
       }
 
-      // Calculate total rent with electricity and trash bills
       const totalRent = room.roomRent + electricityBill + (room.trashBill ?? 0);
 
-      // Add unpaid totalRent to dueAmount if rent not paid
       if (!isPaid) {
         dueAmount += totalRent;
       }

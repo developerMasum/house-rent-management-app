@@ -7,10 +7,11 @@ import { rentFilterableFields } from "./rent.filters";
 import { RentService } from "./rent.service";
 
 const getAllRentByMonth = catchAsync(async (req: Request, res: Response) => {
-  //   const filters = pick(req.query, rentFilterableFields);
-  //   const options = pick(req.query, ["limit", "page", "sortBy", "sortOrder"]);
-  //   const result = await RentService.getAllRentByMonth(filters, options);
-  const result = await RentService.getAllRentByMonth();
+  const filters = pick(req.query, rentFilterableFields);
+  console.log(req.query);
+  const options = pick(req.query, ["limit", "page", "sortBy", "sortOrder"]);
+  const result = await RentService.getAllRentByMonth(filters, options);
+  // const result = await RentService.getAllRentByMonth();
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
