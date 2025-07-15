@@ -70,25 +70,6 @@ const getAllElectricity = async (params: any, options: IPaginationOptions) => {
     parsedSearchTerm = Number.isNaN(temp) ? undefined : temp;
   }
 
-  const latestReading = await prisma.electricityBillReading.findFirst({
-    orderBy: { createdAt: "desc" },
-    select: { monthName: true, year: true },
-  });
-
-  if (!latestReading) {
-    throw new Error("No electricity reading data available.");
-  }
-
-  const monthDate = new Date(
-    `${latestReading.monthName} 1, ${latestReading.year}`
-  );
-  monthDate.setMonth(monthDate.getMonth() - 1);
-  const pastMonthName = monthDate.toLocaleString("default", { month: "long" });
-  const pastYear = monthDate.getFullYear();
-
-  const presentMonthName = latestReading.monthName;
-  const presentYear = latestReading.year;
-
   const roomSearchCondition = parsedSearchTerm
     ? {
         room: {
@@ -97,11 +78,9 @@ const getAllElectricity = async (params: any, options: IPaginationOptions) => {
       }
     : {};
 
-  // Step 4: Fetch present month readings
-  const presentReadings = await prisma.electricityBillReading.findMany({
+  // ✅ Fetch ALL electricity readings with room info
+  const readings = await prisma.electricityBillReading.findMany({
     where: {
-      monthName: presentMonthName,
-      year: presentYear,
       ...roomSearchCondition,
     },
     skip,
@@ -112,8 +91,10 @@ const getAllElectricity = async (params: any, options: IPaginationOptions) => {
         : { createdAt: "desc" },
     select: {
       id: true,
-      roomId: true,
       reading: true,
+      monthName: true,
+      year: true,
+      perUnitPrice: true,
       room: {
         select: {
           roomNo: true,
@@ -123,48 +104,38 @@ const getAllElectricity = async (params: any, options: IPaginationOptions) => {
     },
   });
 
-  // Step 5: Fetch past month readings
-  const pastReadings = await prisma.electricityBillReading.findMany({
-    where: {
-      monthName: pastMonthName,
-      year: pastYear,
-    },
-    select: {
-      roomId: true,
-      reading: true,
-    },
-  });
+  // ✅ Group readings by roomNo
+  const groupedResult: Record<string, any[]> = {};
 
-  const pastMap = new Map<string, number>();
-  pastReadings.forEach((entry) => {
-    pastMap.set(entry.roomId, entry.reading);
-  });
+  readings.forEach((entry) => {
+    const roomKey = String(entry.room.roomNo);
 
-  const result = presentReadings.map((current) => {
-    const pastReading = pastMap.get(current.roomId) ?? 0;
-    const totalUnit = Math.max(0, current.reading - pastReading);
-
-    return {
-      id: current.id,
-      floorNo: current.room.floorNo,
-      roomNo: current.room.roomNo,
-      [`${pastMonthName}Reading`]: pastReading,
-      [`${presentMonthName}Reading`]: current.reading,
-      totalUnit,
+    const data = {
+      id: entry.id,
+      floorNo: entry.room.floorNo,
+      roomNo: entry.room.roomNo,
+      monthName: entry.monthName,
+      year: entry.year,
+      reading: entry.reading,
+      perUnitPrice: entry.perUnitPrice,
     };
+
+    if (!groupedResult[roomKey]) {
+      groupedResult[roomKey] = [];
+    }
+
+    groupedResult[roomKey].push(data);
   });
 
   const total = await prisma.electricityBillReading.count({
     where: {
-      monthName: presentMonthName,
-      year: presentYear,
       ...roomSearchCondition,
     },
   });
 
   return {
     meta: { page, limit, total },
-    result,
+    result: groupedResult,
   };
 };
 

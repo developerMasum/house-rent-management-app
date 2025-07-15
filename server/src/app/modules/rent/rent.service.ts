@@ -1,8 +1,8 @@
 import { Request } from "express";
 import prisma from "../../../shared/prisma";
 
-const getAllRentByMonth = async ({ filters, options }) => {
-  const { monthName, year } = filters || {}; // e.g., { monthName: "June", year: 2025 }
+const getAllRentByMonth = async (filters: any, options: IPaginationOptions) => {
+  const { monthName, year } = filters || {};
   const today = new Date();
   const isFirstDayOfMonth = today.getDate() === 1;
 
@@ -27,7 +27,6 @@ const getAllRentByMonth = async ({ filters, options }) => {
 
   const roomRentDetails = await Promise.all(
     roomInfo.map(async (room) => {
-      // Sort readings by date
       const sortedReadings = room.electricityBillReadings.sort((a, b) => {
         return (
           new Date(`${a.monthName} 1, ${a.year}`).getTime() -
@@ -37,7 +36,6 @@ const getAllRentByMonth = async ({ filters, options }) => {
 
       let currentMonthReading, previousMonthReading;
 
-      // Filter based on selected month
       if (monthName && year) {
         const index = sortedReadings.findIndex(
           (r) => r.monthName === monthName && r.year === Number(year)
@@ -62,7 +60,7 @@ const getAllRentByMonth = async ({ filters, options }) => {
           electricityUnit * (currentMonthReading.perUnitPrice || 0);
       }
 
-      let dueAmountRecord = await prisma.rentInfo.findFirst({
+      const dueAmountRecord = await prisma.rentInfo.findFirst({
         where: { roomId: room.id },
         select: { dueAmount: true },
       });
@@ -98,7 +96,22 @@ const getAllRentByMonth = async ({ filters, options }) => {
     })
   );
 
-  return roomRentDetails;
+  // ✅ Group by month
+  const groupedByMonth: Record<string, any[]> = {};
+  roomRentDetails.forEach((rent) => {
+    const current = rent.PresentMonthElectricityReadings;
+    const key = current
+      ? `${current.monthName} ${current.year}`
+      : "Unknown Month";
+
+    if (!groupedByMonth[key]) {
+      groupedByMonth[key] = [];
+    }
+
+    groupedByMonth[key].push(rent);
+  });
+
+  return groupedByMonth;
 };
 
 //
