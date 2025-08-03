@@ -5,6 +5,8 @@ import prisma from "../../../shared/prisma";
 import { electricitySearchAbleFields } from "../../constans/QueryConstans";
 import { getPreviousMonthYear } from "../../../shared/utils";
 
+import { Request } from "express";
+
 const addElectricityReading = async (req: Request) => {
   const { monthName, year, reading, roomId } = req.body;
 

@@ -1,7 +1,7 @@
 import { Request } from "express";
 import prisma from "../../../shared/prisma";
 
-const getAllRentByMonth = async (filters: any, options: IPaginationOptions) => {
+const getAllRentByMonth = async (filters: any, options: any) => {
   const { monthName, year } = filters || {};
   const today = new Date();
   const isFirstDayOfMonth = today.getDate() === 1;
