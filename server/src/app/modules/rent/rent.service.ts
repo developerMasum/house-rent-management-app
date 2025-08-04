@@ -83,7 +83,7 @@ const getAllRentByMonth = async (filters: any, options: any) => {
         roomNo: room.roomNo,
         floorNo: room.floorNo,
         roomRent: room.roomRent,
-        trashBill: room.trashBill,
+        trashBill: 50,
         electricityUnit,
         electricityBill,
         totalRent,
